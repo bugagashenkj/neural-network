@@ -1,7 +1,7 @@
 import numpy as np
 
 class Net:
-    def __init__(self, network_struct, learning_rate=0.1):
+    def __init__(self, network_struct):
         self.weights = []
         self.weight_layers_num = len(network_struct) - 1;
         for layer_num in range(self.weight_layers_num):
@@ -9,39 +9,42 @@ class Net:
             layer = np.random.normal(0.0, 1, layer_index)
             self.weights.append(layer)
         self.sigmoid_mapper = np.vectorize(self.sigmoid)
-        self.learning_rate = np.array([learning_rate])
+    
+    def round(self, weight_layer, layer):
+        return self.sigmoid_mapper(np.dot(weight_layer, layer))
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def predict(self, inputs):
-        layer = inputs
+    def predict(self, layer):
         for weight_layer in reversed(self.weights):
-            layer = np.dot(weight_layer, layer)
-            layer = self.sigmoid_mapper(layer)
+            layer = self.round(weight_layer, layer)
         return layer 
 
-    def train(self, inputs, expected):
-        layer = inputs
+    def train_round(self, layer, expected_data, learning_rate):
         outputs = [layer]
         for weight_layer in reversed(self.weights):
-            layer = np.dot(weight_layer, layer)
-            layer = self.sigmoid_mapper(layer)
+            layer = self.round(weight_layer, layer) 
             outputs.append(layer)
         
-        output = outputs.pop()
-        errors = [o - e for o,e in zip(output, expected)]
-        for num in range(self.weight_layers_num):
-            weight_deltas = [e * o * (1 - o) for e,o in zip(errors, output)]
-            output = outputs.pop()
-            errors = [0] * len(output)
-            for parent_i in range(len(self.weights[num])):
-                for child_i in range(len(self.weights[num][parent_i])):
-                    self.weights[num][parent_i][child_i] -= output[child_i] * weight_deltas[parent_i] * self.learning_rate
-                    errors[child_i] += self.weights[num][parent_i][child_i] * weight_deltas[parent_i]
+        layer_output = outputs.pop()
+        errors = [output - expected for output, expected in zip(layer_output, expected_data)]
+        for layer_weights in self.weights:
+            weight_deltas = [error * output * (1 - output) for error, output in zip(errors, layer_output)]
+            layer_output = outputs.pop()
+            errors = [0] * len(layer_output)
+            for parent_num, weight_delta in enumerate(weight_deltas):
+                for child_num, output_data in enumerate(layer_output):
+                    layer_weights[parent_num][child_num] -= output_data * weight_delta * learning_rate
+                    errors[child_num] += layer_weights[parent_num][child_num] * weight_delta
             
 
-train = [
+    def train(self, datasets, iterations, learning_rate):
+        for iteration in range(iterations):
+            for input_data, expected_data in datasets:
+                self.train_round(input_data, expected_data, learning_rate)
+                
+datasets = [
         ([0, 0, 1], [1]),
         ([0, 1, 0], [0]),
         ([0, 1, 1], [0]),
@@ -52,12 +55,9 @@ train = [
         ([0, 0, 0], [0])
         ]
 
-network = Net([1, 2, 3], learning_rate = 0.05)
+network = Net([1, 2, 3])
+network.train(datasets, 5000, 0.05)
 
-for e in range(5000):
-   for input_stat, correct_predict in train:
-        network.train(np.array(input_stat), correct_predict)
-
-for input_stat, correct_predict in train:
-    print('{}, {}, {}'.format(str(input_stat), str(network.predict(np.array(input_stat)) > .5), str(correct_predict[0] == 1)))
+for input_data, expected_data in datasets:
+    print('{}, {}, {}'.format(str(input_data), str(network.predict(input_data) > .5), str(expected_data[0] == 1)))
 
