@@ -1,30 +1,38 @@
 import numpy as np
+import random
+import math
+
+def random_matrix(diff, a, b):
+    return [[random.uniform(-diff, diff) for _ in range(a)] for _ in range(b)]
+
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+def mapper(func):
+    return np.vectorize(func)
+
+def next_round(weight_layer, layer):
+    sigmoid_mapper = mapper(sigmoid)
+    return sigmoid_mapper(np.dot(weight_layer, layer))
 
 class Net:
     def __init__(self, network_struct):
         self.weights = []
-        self.weight_layers_num = len(network_struct) - 1;
-        for layer_num in range(self.weight_layers_num):
-            layer_index = tuple(network_struct[layer_num:layer_num + 2])
-            layer = np.random.normal(0.0, 1, layer_index)
-            self.weights.append(layer)
-        self.sigmoid_mapper = np.vectorize(self.sigmoid)
+        prev_layer_size = network_struct.pop(0) 
+        for layer_size in network_struct:
+            weight_layer = random_matrix(0.5, layer_size, prev_layer_size)
+            self.weights.append(weight_layer)
+            prev_layer_size = layer_size
     
-    def round(self, weight_layer, layer):
-        return self.sigmoid_mapper(np.dot(weight_layer, layer))
-
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
-
     def predict(self, layer):
         for weight_layer in reversed(self.weights):
-            layer = self.round(weight_layer, layer)
-        return layer 
+            layer = next_round(weight_layer, layer)
+        return list(map(lambda output: round(output), layer))
 
     def train_round(self, layer, expected_data, learning_rate):
         outputs = [layer]
         for weight_layer in reversed(self.weights):
-            layer = self.round(weight_layer, layer) 
+            layer = next_round(weight_layer, layer) 
             outputs.append(layer)
         
         layer_output = outputs.pop()
@@ -43,21 +51,3 @@ class Net:
         for iteration in range(iterations):
             for input_data, expected_data in datasets:
                 self.train_round(input_data, expected_data, learning_rate)
-                
-datasets = [
-        ([0, 0, 1], [1]),
-        ([0, 1, 0], [0]),
-        ([0, 1, 1], [0]),
-        ([1, 0, 0], [1]),
-        ([1, 0, 1], [1]),
-        ([1, 1, 0], [0]),
-        ([1, 1, 1], [1]),
-        ([0, 0, 0], [0])
-        ]
-
-network = Net([1, 2, 3])
-network.train(datasets, 5000, 0.05)
-
-for input_data, expected_data in datasets:
-    print('{}, {}, {}'.format(str(input_data), str(network.predict(input_data) > .5), str(expected_data[0] == 1)))
-
