@@ -5,13 +5,11 @@ import math
 def random_matrix(diff, a, b):
     return [[random.uniform(-diff, diff) for _ in range(a)] for _ in range(b)]
 
-def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
-
 def mapper(func):
     return np.vectorize(func)
 
 def next_round(weight_layer, layer):
+    sigmoid = lambda x: 1 / (1 + math.exp(-x))
     sigmoid_mapper = mapper(sigmoid)
     return sigmoid_mapper(np.dot(weight_layer, layer))
 

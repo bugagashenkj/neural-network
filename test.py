@@ -12,7 +12,10 @@ datasets = [
         ]
 
 network = Net([1, 2, 3])
-network.train(datasets, 5000, 0.05)
+network.train(datasets, 3000, 0.05)
 
-for inputs, expected in datasets: print(network.predict(inputs) == expected)
+for inputs, expected in datasets:
+    if (network.predict(inputs) != expected):
+        raise Exception('Test failed')
 
+print('Test passed!')
