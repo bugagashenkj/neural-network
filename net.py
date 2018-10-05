@@ -21,10 +21,12 @@ class Net:
             self.weights.append(weight_layer)
             prev_layer_size = layer_size
     
-    def predict(self, layer):
+    def predict(self, layer, percent):
         for weight_layer in self.weights:
             layer = next_round(weight_layer, layer)
-        return [round(output) for output in layer]
+        activation = lambda output: round(output) if output < percent or output > 1 - percent else None 
+        result = [activation(output) for output in layer]
+        return result 
 
     def train(self, datasets, iterations, learning_rate):
         for iteration in range(iterations):
