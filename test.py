@@ -17,7 +17,11 @@ test_datasets = [
 weights = create_weights([3, 2, 1])
 train(weights, train_datasets, 6000, 0.05)
 
+unknown_values = 0
+max_unknown_values = 1
 for inputs, expected in test_datasets:
-    print(predict(weights, inputs, 0.35))
-
-print('Test passed!')
+    result = (predict(weights, inputs, 0.35))
+    if result == None and ++unknown_values > max_unknown_values:
+        raise Exception('Too many unknown values!') 
+    elif result != expected:
+        raise Exception('Uncorrect value!') 

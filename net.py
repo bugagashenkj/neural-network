@@ -4,30 +4,37 @@ import math
 def random_matrix(diff, a, b):
     return [[random.uniform(-diff, diff) for _ in range(a)] for _ in range(b)]
 
-def sigmoid(x): return 1 / (1 + math.exp(-x)) 
+def sigmoid(a):
+    return 1 / (1 + math.exp(-a))
 
-def next_round(weight_layer, layer):
-    return [sigmoid(sum(weight * data for weight, data in zip(weights, layer)))
-            for weights in weight_layer]
+def activation(output, reliable_limit, unknown_value=None):
+    is_output_unknown = reliable_limit < output < 1 - reliable_limit 
+    res_output = unknown_value if is_output_unknown else round(output)
+    return res_output 
 
-def create_weights(network_struct):
+def count_neuron(weights, layer):
+    new_data = sigmoid(sum([weight * data for weight, data in zip(weights, layer)]))
+    return new_data
+
+def count_layer(weights, layer):
+    new_layer = [count_neuron(weights, layer) for weights in weights]
+    return new_layer
+
+def create_weights(layers_size):
     weights = []
-    prev_layer_size = network_struct.pop(0) 
-    for layer_size in network_struct:
-        weight_layer = random_matrix(0.5, prev_layer_size, layer_size)
-        weights.append(weight_layer)
-        prev_layer_size = layer_size
-    return weights
-    
+    for prev_layer, layer in zip(layers_size[:-1], layers_size[1:]):
+        diff = 0.5
+        weights.append(random_matrix(diff, prev_layer, layer)) 
+    return weights 
+
 def predict(weights, layer, percent):
     for weight_layer in weights:
-        layer = next_round(weight_layer, layer)
-    activation = lambda output: None if percent < output < 1 - percent else round(output) 
-    result = [activation(output) for output in layer]
-    return result 
+        layer = count_layer(weight_layer, layer)
+    result_output = [activation(output, percent) for output in layer]
+    return result_output 
 
 def train(weights, datasets, iterations, learning_rate):
-    for iteration in range(iterations):
+    for _ in range(iterations):
         for input_data, expected_data in datasets:
             outputs = train_predict(weights, input_data)
             correct_weights(weights, outputs, expected_data, learning_rate)
@@ -35,7 +42,7 @@ def train(weights, datasets, iterations, learning_rate):
 def train_predict(weights, layer):
     outputs = [layer]
     for weight_layer in weights:
-        layer = next_round(weight_layer, layer)
+        layer = count_layer(weight_layer, layer)
         outputs.append(layer)
     return outputs
 
