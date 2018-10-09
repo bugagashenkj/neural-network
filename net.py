@@ -23,10 +23,10 @@ def create_weights(layers_size):
         weights.append(random_matrix(prev_layer, layer)) 
     return weights 
 
-def predict(weights, layer, percent):
+def predict(weights, layer, reliable_limit):
     for weight_layer in weights:
         layer = count_layer(weight_layer, layer)
-    result_output = [activation(output, percent) for output in layer]
+    result_output = [activation(output, reliable_limit) for output in layer]
     return result_output 
 
 def train(weights, datasets, iterations, learning_rate):
