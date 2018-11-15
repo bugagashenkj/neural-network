@@ -20,7 +20,7 @@ train(weights, train_datasets, 10000, 0.05)
 unknown_values = 0
 max_unknown_values = 1
 for inputs, expected in test_datasets:
-    result = (predict(weights, inputs, 0.35))
+    result = (predict(weights, inputs, 0.25))
     if result == None and ++unknown_values > max_unknown_values:
         raise Exception('Too many unknown values!') 
     elif result != expected:
