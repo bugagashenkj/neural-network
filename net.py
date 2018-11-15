@@ -14,20 +14,17 @@ def activation(output, reliable_limit, unknown_value=None):
 def count_neuron(weights, layer):
     return sigmoid(sum([weight * data for weight, data in zip(weights, layer)]))
 
-def count_layer(weights, layer):
-    return [count_neuron(weights, layer) for weights in weights]
+def count_layer(weights_layer, layer):
+    return [count_neuron(weights, layer) for weights in weights_layer]
 
 def create_weights(layers_size):
-    weights = []
-    for prev_layer, layer in zip(layers_size[:-1], layers_size[1:]):
-        weights.append(random_matrix(prev_layer, layer)) 
-    return weights 
+    return [random_matrix(prev_layer, layer)
+            for prev_layer, layer in zip(layers_size[:-1], layers_size[1:])] 
 
 def predict(weights, layer, reliable_limit):
-    for weight_layer in weights:
-        layer = count_layer(weight_layer, layer)
-    result_output = [activation(output, reliable_limit) for output in layer]
-    return result_output 
+    for weight_layer in weights: layer = count_layer(weight_layer, layer)
+    return [activation(output, reliable_limit) for output in layer]
+
 
 def train(weights, datasets, iterations, learning_rate):
     for _ in range(iterations):
@@ -39,7 +36,7 @@ def correct_weights(weights, layer, expected_data, learning_rate):
     for weight_layer in weights: 
         outputs.append(layer)
         layer = count_layer(weight_layer, layer)
-    
+ 
     errors = [output - expected for output, expected in zip(layer, expected_data)]
     for layer_weights in reversed(weights):
         weight_deltas = [error * output * (1 - output) for error, output in zip(errors, layer)]
