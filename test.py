@@ -15,7 +15,7 @@ test_datasets = [
         ]
 
 weights = create_weights([3, 2, 1])
-train(weights, train_datasets, 10000, 0.05)
+train(weights, train_datasets, 15000, 0.05)
 
 unknown_values = 0
 max_unknown_values = 1
