@@ -1,6 +1,6 @@
-# Backpropagation neural network prototype 
+# Backpropagation neural network
 
-`bugaga-net-prototype` is a library that allows you to create and train a neural network of a given configuration.
+`neural-network` is a library that allows you to create and train a neural network of a given configuration.
 
 ## Create network weights 
 `create_weights(layers_size)`
