@@ -1,4 +1,4 @@
-from net import *
+from lib.net import *
 
 train_datasets = [
         ([0, 0, 1], [1]),
