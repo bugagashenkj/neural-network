@@ -25,7 +25,6 @@ def predict(weights, layer, reliable_limit):
     for weight_layer in weights: layer = count_layer(weight_layer, layer)
     return [activation(output, reliable_limit) for output in layer]
 
-
 def train(weights, datasets, iterations, learning_rate):
     for _ in range(iterations):
         for input_data, expected_data in datasets:
